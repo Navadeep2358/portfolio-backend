@@ -6,10 +6,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
+
+/* ============================
+   CORS (FRONTEND ONLY)
+============================ */
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://portfolio-backend-257s.onrender.com"
+    "https://pentelanavadeep.netlify.app/"
   ],
   methods: ["POST"],
   allowedHeaders: ["Content-Type"]
@@ -17,9 +21,9 @@ app.use(cors({
 
 app.use(express.json());
 
-// ============================
-// EMAIL TRANSPORT
-// ============================
+/* ============================
+   EMAIL TRANSPORT
+============================ */
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -28,9 +32,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ============================
-// CONTACT + AUTO-REPLY
-// ============================
+/* ============================
+   CONTACT + AUTO-REPLY
+============================ */
 app.post("/api/contact", async (req, res) => {
   const { name, email, subject, message } = req.body;
 
@@ -39,7 +43,7 @@ app.post("/api/contact", async (req, res) => {
   }
 
   try {
-    /* 1️⃣ EMAIL TO YOU */
+    // 1️⃣ EMAIL TO YOU
     await transporter.sendMail({
       from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
@@ -56,24 +60,18 @@ app.post("/api/contact", async (req, res) => {
       `,
     });
 
-    /* 2️⃣ AUTO-REPLY TO VISITOR */
+    // 2️⃣ AUTO-REPLY TO VISITOR
     await transporter.sendMail({
       from: `"Navadeep Pentela" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Thanks for reaching out!",
       html: `
         <p>Hi <b>${name}</b>,</p>
-
         <p>Thank you for contacting me through my portfolio.</p>
-
         <p>I’ve received your message and will get back to you as soon as possible.</p>
-
-        <p>Looking forward to connecting with you.</p>
-
         <br/>
         <p>Best regards,</p>
         <p><b>Navadeep Pentela</b></p>
-        <p>Software Engineer | Full Stack Developer</p>
       `,
     });
 
@@ -85,9 +83,9 @@ app.post("/api/contact", async (req, res) => {
   }
 });
 
-// ============================
-// SERVER START
-// ============================
+/* ============================
+   SERVER START
+============================ */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
