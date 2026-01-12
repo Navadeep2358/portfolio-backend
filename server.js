@@ -13,9 +13,9 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://pentelanavadeep.netlify.app/"
+    "https://pentelanavadeep.netlify.app" // ❗ NO trailing slash
   ],
-  methods: ["POST"],
+  methods: ["POST", "OPTIONS"],          // ❗ allow preflight
   allowedHeaders: ["Content-Type"]
 }));
 
@@ -43,7 +43,7 @@ app.post("/api/contact", async (req, res) => {
   }
 
   try {
-    // 1️⃣ EMAIL TO YOU
+    // 1️⃣ Email to you
     await transporter.sendMail({
       from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
@@ -55,30 +55,26 @@ app.post("/api/contact", async (req, res) => {
         <p><b>Subject:</b> ${subject}</p>
         <p><b>Message:</b></p>
         <p>${message}</p>
-        <hr/>
-        <p>Sent from your Portfolio Contact Page</p>
       `,
     });
 
-    // 2️⃣ AUTO-REPLY TO VISITOR
+    // 2️⃣ Auto-reply
     await transporter.sendMail({
       from: `"Navadeep Pentela" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Thanks for reaching out!",
       html: `
         <p>Hi <b>${name}</b>,</p>
-        <p>Thank you for contacting me through my portfolio.</p>
-        <p>I’ve received your message and will get back to you as soon as possible.</p>
+        <p>Thanks for contacting me. I’ve received your message and will reply soon.</p>
         <br/>
-        <p>Best regards,</p>
-        <p><b>Navadeep Pentela</b></p>
+        <p>— Navadeep</p>
       `,
     });
 
     res.status(200).json({ message: "Message sent & auto-reply delivered" });
 
-  } catch (error) {
-    console.error("Email error:", error);
+  } catch (err) {
+    console.error("Email error:", err);
     res.status(500).json({ message: "Failed to send email" });
   }
 });
