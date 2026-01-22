@@ -19,30 +19,14 @@ app.use(cors({
 app.use(express.json());
 
 /* ============================
-   GMAIL SMTP
+   GMAIL SMTP (RENDER SAFE)
 ============================ */
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    pass: process.env.EMAIL_PASS, // Gmail App Password
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
-
-/* ============================
-   VERIFY EMAIL
-============================ */
-transporter.verify((error) => {
-  if (error) {
-    console.error("❌ Email config error:", error);
-  } else {
-    console.log("✅ Email server ready");
-  }
 });
 
 /* ============================
@@ -63,6 +47,7 @@ app.post("/api/contact", async (req, res) => {
   }
 
   try {
+    // Email to you
     await transporter.sendMail({
       from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
@@ -73,26 +58,27 @@ app.post("/api/contact", async (req, res) => {
         <p><b>Email:</b> ${email}</p>
         <p><b>Subject:</b> ${subject}</p>
         <p>${message}</p>
-      `
+      `,
     });
 
+    // Auto-reply to user
     await transporter.sendMail({
       from: `"Navadeep Pentela" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Thanks for contacting me!",
       html: `
         <p>Hi ${name},</p>
-        <p>I’ve received your message and will reply soon.</p>
+        <p>Thanks for reaching out! I’ve received your message and will get back to you soon.</p>
         <br/>
         <p>— Navadeep</p>
-      `
+      `,
     });
 
     res.status(200).json({ message: "Message sent successfully" });
 
   } catch (error) {
     console.error("❌ Email error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Failed to send message" });
   }
 });
 
