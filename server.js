@@ -6,9 +6,9 @@ import { Resend } from "resend";
 dotenv.config();
 
 const app = express();
-const resend = new Resend(process.env.re_KX8RpULz_HhR8UMU8w7sZQKQFTYPxuz6n);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-app.use(cors());               // allow Netlify
+app.use(cors());
 app.use(express.json());
 
 // Health check
@@ -25,10 +25,10 @@ app.post("/api/contact", async (req, res) => {
   }
 
   try {
-    // Email to YOU
+    // 1️⃣ Email TO YOU
     await resend.emails.send({
       from: "Portfolio <onboarding@resend.dev>",
-      to: ["navadeeppentela@gmail.com"], // your inbox
+      to: ["navadeeppentela@gmail.com"],
       subject: `New Contact: ${subject}`,
       html: `
         <h2>New Contact Message</h2>
@@ -39,14 +39,15 @@ app.post("/api/contact", async (req, res) => {
       `,
     });
 
-    // Auto-reply to USER
+    // 2️⃣ Auto-reply TO USER (IMPORTANT FIX)
     await resend.emails.send({
       from: "Navadeep <onboarding@resend.dev>",
       to: [email],
+      reply_to: "navadeeppentela@gmail.com",
       subject: "Thanks for contacting me!",
       html: `
         <p>Hi ${name},</p>
-        <p>I’ve received your message and will reply soon.</p>
+        <p>Thanks for reaching out! I’ve received your message and will get back to you soon.</p>
         <br/>
         <p>— Navadeep</p>
       `,
